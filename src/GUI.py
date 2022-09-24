@@ -1,6 +1,7 @@
 import tkinter as tk
 import TkinterDnD2 as tkdnd
 from model import *
+from tkinter import messagebox as messbx, filedialog
 
 
 class Head(tk.Frame):
@@ -34,9 +35,14 @@ class Footer(tk.Frame):
         self.button_frame.pack()
         self.b_start.pack()
 
+    def list_b_folder(self, event):
+        dire = filedialog.askdirectory(title='выбрать папку для сохранения')
+        self.path = dire
+
     def start(self):
         self.parent.model.detect(self.parent.path)
-        self.parent.model.save()
+        self.list_b_folder(event=None)
+        self.parent.model.save(path=self.path)
 
 
 class DragAndDrop(tk.Frame):
@@ -45,19 +51,33 @@ class DragAndDrop(tk.Frame):
         self.parent = parent
         self.mw = self.parent.parent
         self.var = tk.StringVar()
-        tk.Label(self, text='Путь до папки', bg='#AFEEEE').pack(anchor=tk.NW, padx=10)
-        self.e_box = tk.Entry(self, textvariable=self.var, width=80)
-        self.e_box.pack(fill=tk.X, padx=10)
+        # FRAMES
+        self.entry_frame = tk.Frame(self)
+        # LABELS
+        tk.Label(self, text='Путь до папки', bg='#BDD6D9').pack(anchor=tk.NW, padx=10)
+        # ENTRIES
+        self.e_box = tk.Entry(self.entry_frame, textvariable=self.var, width=100)
+        # BUTTONS
+        self.search = tk.Button(
+            self.entry_frame,
+            text='Выбрать папку',
+            command=self.find_input_folder
+        )
 
-        self.lframe = tk.LabelFrame(self, text='Инструкция', bg='#AFEEEE')
+        # LABEL FRAME
+        self.lframe = tk.LabelFrame(self, text='Инструкция', bg='#BDD6D9')
         tk.Label(
             self.lframe,
-            bg='#AFEEEE',
+            bg='#BDD6D9',
             text='Перетащите папку с фотографиями \nв рамку инструкции.\n Вы получите путь в поле выше.'
         ).pack(fill=tk.BOTH, expand=True)
-        self.lframe.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         self.lframe.drop_target_register(tkdnd.DND_FILES)
         self.lframe.dnd_bind('<<Drop>>', self.drop)
+        # PLACING
+        self.entry_frame.pack(fill='x')
+        self.e_box.pack(fill=tk.X, side=tk.LEFT, padx=10)
+        self.search.pack(side=tk.LEFT)
+        self.lframe.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
     def drop(self, event):
         print(event.data)
@@ -66,6 +86,11 @@ class DragAndDrop(tk.Frame):
         self.var.set(x)
         self.parent.path = self.e_box.get()
         print(self.parent.path)
+
+    def find_input_folder(self):
+        dire = filedialog.askdirectory(title='выбрать папку для сохранения')
+
+        self.parent.path = dire
 
 
 class MainApplication(tk.Frame):
